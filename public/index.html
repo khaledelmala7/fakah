@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>فَكَّة (Fakah) | ادفع عند كَاسِب.. وخليك دايماً فَاكِك!</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    body { font-family: 'Cairo', sans-serif; background-color: #090d16; color: #f8fafc; }
+    .glass-card { background: rgba(17, 24, 39, 0.75); backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.07); }
+    .pulse-ring { animation: pulse 2s infinite; }
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 14px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+  <!-- ==================== SPLASH / LOGIN MODAL ==================== -->
+  <div id="screen-login" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="glass-card rounded-3xl max-w-md w-full p-6 sm:p-8 space-y-6 border border-emerald-500/30 shadow-2xl text-center">
+      <div class="w-16 h-16 rounded-3xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-3xl mx-auto shadow-xl shadow-emerald-500/20">
+        ⚡
+      </div>
+      <div>
+        <h2 class="text-2xl font-black text-white">مرحباً بك في <span class="text-emerald-400">فَكَّة</span></h2>
+        <p class="text-xs text-slate-400 mt-1">منظومة المدفوعات والكسور النقدية اليومية</p>
+        <p class="text-xs text-emerald-400 font-bold mt-1">"ادفع عند كَاسِب.. وخليك دايماً فَاكِك!"</p>
+      </div>
+
+      <!-- Quick Persona Login Selector -->
+      <div class="space-y-3 text-right">
+        <label class="block text-xs text-slate-300 font-bold">اختر الحساب للتجربة الميدانية:</label>
+        
+        <button onclick="loginAs('fakik_1', 'fakik')" class="w-full bg-slate-900/90 hover:bg-emerald-950/50 border border-slate-700 hover:border-emerald-500/60 p-3.5 rounded-2xl flex items-center justify-between transition group">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">🧑‍💻</span>
+            <div class="text-right">
+              <p class="text-sm font-bold text-white group-hover:text-emerald-400">محمد علي</p>
+              <p class="text-[11px] text-slate-400">فَاكِك (زبون وراكب مواصلات يومي)</p>
+            </div>
+          </div>
+          <span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-lg font-bold">دخول</span>
+        </button>
+
+        <button onclick="loginAs('kasib_1', 'kasib')" class="w-full bg-slate-900/90 hover:bg-blue-950/50 border border-slate-700 hover:border-blue-500/60 p-3.5 rounded-2xl flex items-center justify-between transition group">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">🚐</span>
+            <div class="text-right">
+              <p class="text-sm font-bold text-white group-hover:text-blue-400">الأسطى أحمد</p>
+              <p class="text-[11px] text-slate-400">كَاسِب (سائق ميكروباص - خط الجامعة)</p>
+            </div>
+          </div>
+          <span class="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2.5 py-1 rounded-lg font-bold">دخول</span>
+        </button>
+
+        <button onclick="loginAs('kasib_2', 'kasib')" class="w-full bg-slate-900/90 hover:bg-amber-950/50 border border-slate-700 hover:border-amber-500/60 p-3.5 rounded-2xl flex items-center justify-between transition group">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">🏪</span>
+            <div class="text-right">
+              <p class="text-sm font-bold text-white group-hover:text-amber-400">عم حسن</p>
+              <p class="text-[11px] text-slate-400">كَاسِب (صاحب كشك وبقالة النصر)</p>
+            </div>
+          </div>
+          <span class="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-1 rounded-lg font-bold">دخول</span>
+        </button>
+      </div>
+
+      <div class="pt-2 border-t border-slate-800 text-[11px] text-slate-500">
+        يمكنك التبديل بين الحسابات وأدوار الدفع في أي لحظة من داخل التطبيق.
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Global Header -->
+  <header class="border-b border-slate-800 bg-slate-950/80 sticky top-0 z-40 backdrop-blur-md px-4 py-3">
+    <div class="max-w-5xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-xl shadow-lg shadow-emerald-500/20">
+          ⚡
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl font-black text-white tracking-wide">فَكَّة <span class="text-emerald-400 text-sm font-semibold">Fakah</span></h1>
+            <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full">أونلاين</span>
+          </div>
+          <p class="text-xs text-emerald-400/90 font-medium">ادفع عند كَاسِب.. وخليك دايماً فَاكِك!</p>
+        </div>
+      </div>
+
+      <!-- User Badge + Switcher -->
+      <div class="flex items-center gap-2">
+        <div class="hidden sm:flex items-center gap-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full text-xs">
+          <span id="current-user-avatar">🧑‍💻</span>
+          <span id="current-user-name" class="font-bold text-white">محمد علي</span>
+        </div>
+        <button onclick="document.getElementById('screen-login').classList.remove('hidden')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-3 py-1.5 rounded-xl border border-slate-700">
+          تبديل الحساب
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Role Selector -->
+  <div class="max-w-5xl mx-auto w-full px-4 pt-4">
+    <div class="bg-slate-900/90 p-1.5 rounded-2xl flex flex-wrap gap-1.5 border border-slate-800 shadow-inner">
+      <button onclick="switchRole('fakik')" id="btn-role-fakik" class="flex-1 py-2.5 px-3 rounded-xl font-black text-sm transition flex items-center justify-center gap-2 bg-emerald-500 text-slate-950 shadow-lg">
+        <span>🧑‍💻</span> وضع "فَاكِك" (الدفع واستقبال الباقي)
+      </button>
+      <button onclick="switchRole('kasib')" id="btn-role-kasib" class="flex-1 py-2.5 px-3 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 text-slate-300 hover:text-white hover:bg-slate-800">
+        <span>🏪</span> وضع "كَاسِب" (الاستقبال ورد الباقي)
+      </button>
+      <button onclick="switchRole('ledger')" id="btn-role-ledger" class="flex-1 py-2.5 px-3 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 text-slate-300 hover:text-white hover:bg-slate-800">
+        <span>📊</span> الخزينة والأرباح (The Float)
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="max-w-5xl mx-auto w-full p-4 flex-1">
+
+    <!-- ==================== VIEW 1: فَاكِك ==================== -->
+    <section id="view-fakik" class="space-y-4">
+      <div class="glass-card rounded-3xl p-6 relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-850 to-emerald-950/40 border-emerald-500/20">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <span class="text-3xl">🧑‍💻</span>
+            <div>
+              <p class="text-xs text-slate-400">محفظة فَاكِك اليومية</p>
+              <h2 class="text-lg font-black text-white" id="fakik-name">محمد علي</h2>
+            </div>
+          </div>
+          <button onclick="openModal('modal-topup')" class="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/40 px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+            <span>+</span> اشحن فكة
+          </button>
+        </div>
+
+        <div class="my-2">
+          <p class="text-xs text-slate-400">الرصيد المتاح للدفع السريع في الشارع</p>
+          <div class="flex items-baseline gap-2 mt-1">
+            <span class="text-4xl font-black text-emerald-400 tracking-tight" id="fakik-balance">85.50</span>
+            <span class="text-sm font-bold text-slate-300">جنيه مصري</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-3xl p-6 space-y-5">
+        <div class="flex items-center justify-between">
+          <h3 class="font-bold text-slate-200 text-sm flex items-center gap-2">
+            <span>⚡</span> ادفع عند كَاسِب (في ثانية واحدة)
+          </h3>
+          <span class="text-xs text-emerald-400 font-semibold bg-emerald-500/10 px-2.5 py-1 rounded-lg">صفر عمولة</span>
+        </div>
+
+        <div>
+          <label class="block text-xs text-slate-400 mb-1.5">اختر التاجر أو السائق (كَاسِب):</label>
+          <select id="pay-target" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-3 text-sm font-bold text-white focus:outline-none focus:border-emerald-500">
+            <option value="kasib_1">🚐 الأسطى أحمد (سائق ميكروباص | خط الجامعة - الجيزة)</option>
+            <option value="kasib_2">🏪 عم حسن (صاحب كشك وبقالة النصر)</option>
+            <option value="kasib_3">🥬 المعلم إبراهيم (خضار وفاكهة - كسور الميزان)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs text-slate-400 mb-2">أجرة ومشتريات شائعة (اختر بنقرة واحدة):</label>
+          <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+            <button onclick="setPayAmount(0.50)" class="bg-slate-850 hover:bg-emerald-600/30 border border-slate-700 hover:border-emerald-500 text-white font-bold py-2 rounded-xl text-xs transition">0.50 ج.م<span class="block text-[10px] text-slate-400">نصف جنيه</span></button>
+            <button onclick="setPayAmount(1.00)" class="bg-slate-850 hover:bg-emerald-600/30 border border-slate-700 hover:border-emerald-500 text-white font-bold py-2 rounded-xl text-xs transition">1.00 ج.م<span class="block text-[10px] text-slate-400">جنيه فكة</span></button>
+            <button onclick="setPayAmount(7.50)" class="bg-emerald-600 text-white border border-emerald-400 font-bold py-2 rounded-xl text-xs transition shadow-md shadow-emerald-600/20">7.50 ج.م<span class="block text-[10px] text-emerald-100">أجرة الجامعة</span></button>
+            <button onclick="setPayAmount(14.30)" class="bg-slate-850 hover:bg-emerald-600/30 border border-slate-700 hover:border-emerald-500 text-white font-bold py-2 rounded-xl text-xs transition">14.30 ج.م<span class="block text-[10px] text-slate-400">ميزان خضار</span></button>
+            <button onclick="setPayAmount(25.00)" class="bg-slate-850 hover:bg-emerald-600/30 border border-slate-700 hover:border-emerald-500 text-white font-bold py-2 rounded-xl text-xs transition">25.00 ج.م<span class="block text-[10px] text-slate-400">طلبات كشك</span></button>
+            <button onclick="setPayAmount(60.00)" class="bg-slate-850 hover:bg-emerald-600/30 border border-slate-700 hover:border-emerald-500 text-white font-bold py-2 rounded-xl text-xs transition">60.00 ج.م<span class="block text-[10px] text-slate-400">أجرة عائلة</span></button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs text-slate-400 mb-1.5">أو اكتب أي مبلغ (من 0.25 حتى 100 جنيه):</label>
+          <div class="relative">
+            <input type="number" id="pay-amount-input" step="0.25" min="0.25" max="100" value="7.50" 
+              class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-2xl font-black text-emerald-400 focus:outline-none focus:border-emerald-500">
+            <span class="absolute left-4 top-4 text-xs font-bold text-slate-500">جنيه مصري</span>
+          </div>
+        </div>
+
+        <button onclick="executePayment()" id="btn-pay" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black py-4 px-6 rounded-2xl text-lg shadow-xl shadow-emerald-500/20 transition flex items-center justify-center gap-2 transform active:scale-98">
+          <span>⚡</span> فِكّ وادفع الآن (نصف ثانية)
+        </button>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 2: كَاسِب ==================== -->
+    <section id="view-kasib" class="space-y-4 hidden">
+      <div class="glass-card rounded-3xl p-6 bg-gradient-to-br from-slate-900 via-slate-850 to-blue-950/30 border-blue-500/20">
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-3">
+            <span class="text-4xl" id="kasib-avatar">🚐</span>
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 class="text-lg font-black text-white" id="kasib-name">الأسطى أحمد</h2>
+                <span class="bg-blue-500/20 text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-500/30">كَاسِب معتمد</span>
+              </div>
+              <p class="text-xs text-slate-300 mt-0.5" id="kasib-desc">لوحة: ط س ج ٤٩٢١ | خط الجامعة - الجيزة</p>
+            </div>
+          </div>
+
+          <div class="flex flex-col items-end">
+            <div class="flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-bold">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 pulse-ring"></span>
+              <span>مكبر الصوت جاهز 🔊</span>
+            </div>
+            <button onclick="testSpeech()" class="mt-1 text-[11px] text-slate-400 underline hover:text-emerald-400">
+              اختبر الصوت الآن
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+          <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800">
+            <p class="text-xs text-slate-400">إجمالي الحصيلة المجمعة اليوم</p>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="text-4xl font-black text-emerald-400 tracking-tight" id="kasib-balance">215.00</span>
+              <span class="text-sm font-semibold text-slate-300">جنيه مصري</span>
+            </div>
+            <p class="text-[11px] text-slate-500 mt-1">وصلت كاملة دون خصم أي مليم</p>
+          </div>
+
+          <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800 flex flex-col justify-between">
+            <div>
+              <p class="text-xs text-slate-400">سحب الحصيلة كاش (اقبض)</p>
+              <p class="text-xs text-slate-300 mt-0.5">تحويل فوري لمحفظة فودافون كاش أو بطاقة ميزة</p>
+            </div>
+            <button onclick="openModal('modal-cashout')" class="mt-3 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition flex items-center justify-center gap-2">
+              <span>💳</span> سحب أرباحي كاش (عمولة 1.5%)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons for Kasib -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="glass-card rounded-3xl p-5 border-emerald-500/30 bg-gradient-to-br from-slate-900 to-emerald-950/30 flex flex-col justify-between text-center">
+          <div>
+            <span class="text-3xl">📥</span>
+            <h4 class="font-black text-white text-base mt-2">استقبل حساب (قَبَّض)</h4>
+            <p class="text-xs text-slate-400 mt-1">اعرض ملصق الـ QR للزبون واستمع لتأكيد الصوت الفوري</p>
+          </div>
+          <div class="my-4 flex justify-center">
+            <div class="inline-block p-3 bg-white rounded-2xl shadow-xl border-2 border-emerald-500">
+              <div id="qrcode" class="flex justify-center"></div>
+              <p class="text-slate-900 font-black text-[11px] mt-1">كَاسِب | امسح وادفع</p>
+            </div>
+          </div>
+          <p class="text-[11px] text-emerald-400 font-semibold">جاهز دائماً لتلقي الدفعات</p>
+        </div>
+
+        <div class="glass-card rounded-3xl p-5 border-amber-500/30 bg-gradient-to-br from-slate-900 to-amber-950/30 flex flex-col justify-between text-center">
+          <div>
+            <span class="text-3xl">🔄</span>
+            <h4 class="font-black text-white text-base mt-2">رُدّ باقي نقدي للزبون</h4>
+            <p class="text-xs text-slate-400 mt-1">الزبون دفع ورقة 100 جنيه وممعكش فكة؟ حول له الباقي فوراً وأنقذ البيعة!</p>
+          </div>
+          <div class="my-6">
+            <button onclick="openModal('modal-reverse-change')" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black py-4 px-4 rounded-2xl text-base shadow-xl shadow-amber-500/20 transition flex items-center justify-center gap-2 transform active:scale-98">
+              <span>⚡</span> افتح شاشة "رد الباقي" الآن
+            </button>
+          </div>
+          <p class="text-[11px] text-amber-300 font-medium">بديل اللبانة والبسكوت المرفوض في الشارع</p>
+        </div>
+      </div>
+
+      <div id="voice-banner" class="hidden p-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/50 flex items-center gap-3 transition-all animate-bounce">
+        <span class="text-2xl">📢</span>
+        <div>
+          <p class="text-xs text-emerald-300 font-bold">تم نطق هذا التأكيد الصوتي في محلك/سيارتك الآن:</p>
+          <p id="voice-banner-text" class="text-sm font-black text-white"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 3: LEDGER ==================== -->
+    <section id="view-ledger" class="space-y-4 hidden">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="glass-card rounded-3xl p-5 border-emerald-500/30 bg-gradient-to-br from-slate-900 to-emerald-950/20">
+          <span class="text-2xl">🏦</span>
+          <p class="text-xs text-slate-400 mt-2">إجمالي السيولة المعطلة (The Float)</p>
+          <div class="flex items-baseline gap-1 mt-1">
+            <span class="text-3xl font-black text-white" id="stat-float-held">800.75</span>
+            <span class="text-xs text-slate-400">ج.م</span>
+          </div>
+          <p class="text-[11px] text-emerald-400 mt-2 font-medium">
+            عائد سنوي متوقع (22% أذون خزانة): <span id="stat-float-annual" class="font-bold">176.16 ج.م</span>
+          </p>
+        </div>
+
+        <div class="glass-card rounded-3xl p-5 border-blue-500/30 bg-gradient-to-br from-slate-900 to-blue-950/20">
+          <span class="text-2xl">💰</span>
+          <p class="text-xs text-slate-400 mt-2">أرباح رسوم السحب كاش (1.5%)</p>
+          <div class="flex items-baseline gap-1 mt-1">
+            <span class="text-3xl font-black text-blue-400" id="stat-fees">0.00</span>
+            <span class="text-xs text-slate-400">ج.م</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-2">تُحصل عند خروج الأموال من المنظومة</p>
+        </div>
+
+        <div class="glass-card rounded-3xl p-5 border-purple-500/30 bg-gradient-to-br from-slate-900 to-purple-950/20">
+          <span class="text-2xl">📈</span>
+          <p class="text-xs text-slate-400 mt-2">إجمالي التداول اليومي</p>
+          <div class="flex items-baseline gap-1 mt-1">
+            <span class="text-3xl font-black text-purple-400" id="stat-volume">22.00</span>
+            <span class="text-xs text-slate-400">ج.م</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-2">عدد المعاملات: <span id="stat-count" class="font-bold">2</span></p>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-3xl p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="font-bold text-white text-base">دفتر الأستاذ المالي المزدوج (Double-Entry Ledger)</h3>
+            <p class="text-xs text-slate-400">سجل لحظي مشفر للعمليات بما فيها حركات الدفع ورد الباقي والسحب</p>
+          </div>
+          <button onclick="resetData()" class="text-xs text-red-400 hover:text-red-300 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-xl font-medium">
+            إعادة تعيين البيانات
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-right text-xs text-slate-300">
+            <thead class="bg-slate-950 text-slate-400 uppercase text-[11px] border-b border-slate-800">
+              <tr>
+                <th class="py-3 px-3">رقم العملية</th>
+                <th class="py-3 px-3">الوقت</th>
+                <th class="py-3 px-3">من (مدين)</th>
+                <th class="py-3 px-3">إلى (دائن)</th>
+                <th class="py-3 px-3">المبلغ</th>
+                <th class="py-3 px-3">النوع والبيان</th>
+                <th class="py-3 px-3">الحالة</th>
+              </tr>
+            </thead>
+            <tbody id="ledger-rows" class="divide-y divide-slate-800/80"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modals -->
+  <div id="modal-reverse-change" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-amber-500/40 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">🔄</span>
+          <h4 class="font-black text-white text-base">رد باقي نقدي للزبون</h4>
+        </div>
+        <button onclick="closeModal('modal-reverse-change')" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+
+      <p class="text-xs text-slate-300">
+        الزبون دفع ورقة نقدية كبيرة وممعكش فكة؟ اختر مبلغ الباقي المتبقي وحوله لمحفظته في ثانية:
+      </p>
+
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">الزبون المستلم للباقي (فَاكِك):</label>
+        <select id="change-customer" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm font-bold text-white">
+          <option value="fakik_1">🧑‍💻 محمد علي (01012345678)</option>
+          <option value="fakik_2">👩‍🎓 سارة خالد (01198765432)</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs text-slate-400 mb-1.5">باقي شائع (انقر للاختيار):</label>
+        <div class="grid grid-cols-4 gap-2">
+          <button onclick="setChangeAmount(1.50)" class="bg-slate-800 hover:bg-amber-600/30 border border-slate-700 hover:border-amber-500 text-white font-bold py-2 rounded-xl text-xs transition">1.50 ج.م</button>
+          <button onclick="setChangeAmount(2.50)" class="bg-slate-800 hover:bg-amber-600/30 border border-slate-700 hover:border-amber-500 text-white font-bold py-2 rounded-xl text-xs transition">2.50 ج.م</button>
+          <button onclick="setChangeAmount(5.00)" class="bg-slate-800 hover:bg-amber-600/30 border border-slate-700 hover:border-amber-500 text-white font-bold py-2 rounded-xl text-xs transition">5.00 ج.م</button>
+          <button onclick="setChangeAmount(16.50)" class="bg-amber-600 text-white border border-amber-400 font-bold py-2 rounded-xl text-xs transition shadow-md shadow-amber-600/20">16.50 ج.م</button>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">أو اكتب مبلغ الباقي بالضبط:</label>
+        <div class="relative">
+          <input type="number" id="change-amount-input" step="0.25" min="0.25" max="100" value="16.50"
+            class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-2xl font-black text-amber-400 focus:outline-none focus:border-amber-500">
+          <span class="absolute left-4 top-4 text-xs font-bold text-slate-500">جنيه مصري</span>
+        </div>
+      </div>
+
+      <button onclick="executeReverseChange()" id="btn-change-submit" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black py-3.5 rounded-xl text-sm transition flex items-center justify-center gap-2">
+        <span>✓</span> حوّل الباقي الآن فوراً لمحفظة الزبون
+      </button>
+    </div>
+  </div>
+
+  <div id="modal-topup" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-sm w-full p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <h4 class="font-bold text-white text-base">شحن محفظة فَاكِك</h4>
+        <button onclick="closeModal('modal-topup')" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+      <p class="text-xs text-slate-400">اختر المبلغ المراد شحنه (محاكاة الشحن عبر إنستاباي أو ميزة):</p>
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="executeTopUp(50)" class="bg-slate-850 hover:bg-emerald-600/30 border border-slate-700 hover:border-emerald-500 p-3.5 rounded-xl text-center transition">
+          <span class="block text-lg font-black text-white">+50 ج.م</span>
+          <span class="text-[10px] text-slate-400">شحن سريع</span>
+        </button>
+        <button onclick="executeTopUp(100)" class="bg-slate-850 hover:bg-emerald-600/30 border border-slate-700 hover:border-emerald-500 p-3.5 rounded-xl text-center transition">
+          <span class="block text-lg font-black text-white">+100 ج.م</span>
+          <span class="text-[10px] text-slate-400">موصى به للأسبوع</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-cashout" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-md w-full p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <h4 class="font-bold text-white text-base">سحب الحصيلة النقدية (اقبض)</h4>
+        <button onclick="closeModal('modal-cashout')" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+      <p class="text-xs text-slate-400">تحويل رصيدك اليومي كاش لمحفظة فودافون كاش أو بطاقة ميزة:</p>
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">المبلغ المراد سحبه كاش:</label>
+        <input type="number" id="cashout-amount" value="150" min="10" step="10" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-lg font-bold text-white">
+      </div>
+      <div class="bg-slate-850 p-3 rounded-2xl text-xs space-y-1.5 border border-slate-700">
+        <div class="flex justify-between text-slate-400">
+          <span>رسوم المنصة الإدارية (1.5%):</span>
+          <span id="cashout-fee-preview" class="text-amber-400 font-bold">2.25 ج.م</span>
+        </div>
+        <div class="flex justify-between text-white font-bold border-t border-slate-700 pt-1.5">
+          <span>الصافي المحول لمحفظتك:</span>
+          <span id="cashout-net-preview" class="text-emerald-400 font-black">147.75 ج.م</span>
+        </div>
+      </div>
+      <button onclick="executeCashOut()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl text-sm transition">
+        تأكيد سحب الأموال كاش الآن
+      </button>
+    </div>
+  </div>
+
+  <footer class="border-t border-slate-800/80 py-3 px-4 text-center text-xs text-slate-500">
+    منظومة فَكَّة للمدفوعات اليومية | ادفع عند كَاسِب.. وخليك دايماً فَاكِك!
+  </footer>
+
+  <script>
+    let appState = null;
+    let socket = null;
+    let currentUser = { id: 'fakik_1', name: 'محمد علي', role: 'fakik', avatar: '🧑‍💻' };
+
+    function loginAs(userId, defaultRole) {
+      if (!appState) return;
+      const user = appState.users.find(u => u.id === userId);
+      if (user) {
+        currentUser = user;
+        document.getElementById('current-user-avatar').innerText = user.avatar;
+        document.getElementById('current-user-name').innerText = user.name;
+        document.getElementById('screen-login').classList.add('hidden');
+        switchRole(defaultRole);
+      }
+    }
+
+    function playBeep(freq = 880, duration = 120) {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration / 1000);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration / 1000);
+      } catch (e) {}
+    }
+
+    function speakArabic(text) {
+      if ('speechSynthesis' in window) {
+        playBeep(920, 140);
+        setTimeout(() => {
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = 'ar-EG';
+          utterance.rate = 0.95;
+          utterance.pitch = 1.0;
+          const voices = window.speechSynthesis.getVoices();
+          const arVoice = voices.find(v => v.lang.startsWith('ar'));
+          if (arVoice) utterance.voice = arVoice;
+          window.speechSynthesis.speak(utterance);
+        }, 120);
+      }
+    }
+
+    function switchRole(role) {
+      document.getElementById('view-fakik').classList.toggle('hidden', role !== 'fakik');
+      document.getElementById('view-kasib').classList.toggle('hidden', role !== 'kasib');
+      document.getElementById('view-ledger').classList.toggle('hidden', role !== 'ledger');
+
+      const btnF = document.getElementById('btn-role-fakik');
+      const btnK = document.getElementById('btn-role-kasib');
+      const btnL = document.getElementById('btn-role-ledger');
+
+      const activeClass = ['bg-emerald-500', 'text-slate-950', 'shadow-lg'];
+      const inactiveClass = ['text-slate-300', 'hover:text-white', 'hover:bg-slate-800'];
+
+      [btnF, btnK, btnL].forEach(b => {
+        b.classList.remove(...activeClass);
+        b.classList.add(...inactiveClass);
+      });
+
+      if (role === 'fakik') btnF.classList.add(...activeClass), btnF.classList.remove(...inactiveClass);
+      if (role === 'kasib') btnK.classList.add(...activeClass), btnK.classList.remove(...inactiveClass);
+      if (role === 'ledger') btnL.classList.add(...activeClass), btnL.classList.remove(...inactiveClass);
+    }
+
+    function setPayAmount(val) { document.getElementById('pay-amount-input').value = val.toFixed(2); }
+    function setChangeAmount(val) { document.getElementById('change-amount-input').value = val.toFixed(2); }
+
+    function renderQRCode() {
+      const qrContainer = document.getElementById('qrcode');
+      qrContainer.innerHTML = '';
+      new QRCode(qrContainer, {
+        text: JSON.stringify({ app: 'fakah', to: 'kasib_1', name: 'الأسطى أحمد' }),
+        width: 160,
+        height: 160,
+        colorDark: "#064e3b",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    }
+
+    async function loadState() {
+      try {
+        const res = await fetch('/api/state');
+        appState = await res.json();
+        updateUI();
+      } catch (err) { console.error(err); }
+    }
+
+    function updateUI() {
+      if (!appState) return;
+
+      const fakik = appState.users.find(u => u.id === 'fakik_1');
+      const kasib = appState.users.find(u => u.id === 'kasib_1');
+
+      if (fakik) {
+        document.getElementById('fakik-name').innerText = fakik.name;
+        document.getElementById('fakik-balance').innerText = fakik.balance.toFixed(2);
+      }
+
+      if (kasib) {
+        document.getElementById('kasib-name').innerText = kasib.name;
+        document.getElementById('kasib-balance').innerText = kasib.balance.toFixed(2);
+      }
+
+      document.getElementById('stat-float-held').innerText = appState.platform.totalBalancesHeld.toFixed(2);
+      document.getElementById('stat-float-annual').innerText = appState.platform.estimatedAnnualFloatEarnings.toFixed(2) + ' ج.م';
+      document.getElementById('stat-fees').innerText = appState.platform.totalCashOutFeesCollected.toFixed(2);
+      document.getElementById('stat-volume').innerText = appState.platform.totalVolumeTransacted.toFixed(2);
+      document.getElementById('stat-count').innerText = appState.platform.totalTransactionsCount;
+
+      const rows = document.getElementById('ledger-rows');
+      rows.innerHTML = appState.transactions.map(t => `
+        <tr class="hover:bg-slate-900/60 transition">
+          <td class="py-3 px-3 font-mono font-bold text-slate-400">${t.id}</td>
+          <td class="py-3 px-3 text-slate-400">${t.timestamp}</td>
+          <td class="py-3 px-3 font-semibold text-slate-200">${t.fromName}</td>
+          <td class="py-3 px-3 font-semibold text-emerald-400">${t.toName}</td>
+          <td class="py-3 px-3 font-black text-white">${t.amount.toFixed(2)} ج.م</td>
+          <td class="py-3 px-3">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${
+              t.type === 'PAYMENT' ? 'bg-emerald-500/20 text-emerald-400' :
+              t.type === 'REVERSE_CHANGE' ? 'bg-amber-500/20 text-amber-400' :
+              t.type === 'CASHOUT' ? 'bg-blue-500/20 text-blue-400' : 'bg-purple-500/20 text-purple-400'
+            }">${t.type === 'REVERSE_CHANGE' ? 'رد باقي' : t.type}</span>
+            <span class="block text-[10px] text-slate-400 mt-0.5">${t.note || ''}</span>
+          </td>
+          <td class="py-3 px-3"><span class="text-emerald-400 font-bold">✓ مكتملة</span></td>
+        </tr>
+      `).join('');
+    }
+
+    async function executePayment() {
+      const amount = parseFloat(document.getElementById('pay-amount-input').value);
+      const toId = document.getElementById('pay-target').value;
+      const btn = document.getElementById('btn-pay');
+
+      if (isNaN(amount) || amount < 0.25 || amount > 100) {
+        alert('يرجى تحديد مبلغ بين 0.25 جنيه و 100 جنيه مصري');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = `<span>⏳</span> جاري الدفع السريع...`;
+
+      try {
+        const res = await fetch('/api/pay', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fromId: 'fakik_1', toId, amount })
+        });
+        const data = await res.json();
+        if (data.error) alert(data.error);
+        else playBeep(1046, 120);
+      } catch (e) { alert('خطأ في الاتصال'); }
+      finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>⚡</span> فِكّ وادفع الآن (نصف ثانية)`;
+      }
+    }
+
+    async function executeReverseChange() {
+      const changeAmount = parseFloat(document.getElementById('change-amount-input').value);
+      const customerId = document.getElementById('change-customer').value;
+      const btn = document.getElementById('btn-change-submit');
+
+      if (isNaN(changeAmount) || changeAmount <= 0) {
+        alert('يرجى إدخال مبلغ باقي صالح');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = 'جاري رد الباقي...';
+
+      try {
+        const res = await fetch('/api/reverse-change', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ merchantId: 'kasib_1', customerId, changeAmount })
+        });
+        const data = await res.json();
+        if (data.error) alert(data.error);
+        else closeModal('modal-reverse-change');
+      } catch (e) { alert('فشل رد الباقي'); }
+      finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>✓</span> حوّل الباقي الآن فوراً لمحفظة الزبون`;
+      }
+    }
+
+    async function executeTopUp(amount) {
+      try {
+        await fetch('/api/topup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: 'fakik_1', amount })
+        });
+        closeModal('modal-topup');
+      } catch (e) { alert('فشل الشحن'); }
+    }
+
+    async function executeCashOut() {
+      const amount = parseFloat(document.getElementById('cashout-amount').value);
+      try {
+        const res = await fetch('/api/cashout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: 'kasib_1', amount, destination: 'فودافون كاش' })
+        });
+        const data = await res.json();
+        if (data.error) alert(data.error);
+        else {
+          closeModal('modal-cashout');
+          alert(`تم تحويل ${data.netAmount} ج.م لمحفظتك بنجاح بعد خصم رسوم إدارية ${data.fee} ج.م`);
+        }
+      } catch (e) { alert('فشل السحب'); }
+    }
+
+    async function resetData() {
+      if (confirm('هل تريد إعادة تعيين الأرصدة إلى الوضع التجريبي الأصلي؟')) {
+        await fetch('/api/reset', { method: 'POST' });
+        loadState();
+      }
+    }
+
+    function testSpeech() {
+      speakArabic('تم استلام سبعة جنيهات ونصف بنجاح من فَاكِك');
+    }
+
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    function initWebSocket() {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      socket = new WebSocket(`${protocol}//${window.location.host}`);
+
+      socket.onmessage = (event) => {
+        const payload = JSON.parse(event.data);
+
+        if (payload.type === 'NEW_PAYMENT') {
+          const txn = payload.data.transaction;
+          const spoken = `تم استلام ${txn.amountWords} بنجاح من فَاكِك`;
+          speakArabic(spoken);
+
+          const banner = document.getElementById('voice-banner');
+          document.getElementById('voice-banner-text').innerText = `"${spoken}"`;
+          banner.classList.remove('hidden');
+          setTimeout(() => banner.classList.add('hidden'), 6000);
+          loadState();
+        } else if (payload.type === 'NEW_REVERSE_CHANGE') {
+          const txn = payload.data.transaction;
+          const spoken = `تم رد باقي ${txn.amountWords} بنجاح إلى فَاكِك`;
+          speakArabic(spoken);
+
+          const banner = document.getElementById('voice-banner');
+          document.getElementById('voice-banner-text').innerText = `"${spoken}"`;
+          banner.classList.remove('hidden');
+          setTimeout(() => banner.classList.add('hidden'), 6000);
+          loadState();
+        } else {
+          loadState();
+        }
+      };
+
+      socket.onclose = () => {
+        setTimeout(initWebSocket, 2000);
+      };
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderQRCode();
+      loadState();
+      initWebSocket();
+    });
+  </script>
+</body>
+</html>
