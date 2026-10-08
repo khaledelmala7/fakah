@@ -22,28 +22,58 @@
 </head>
 <body class="min-h-screen flex flex-col justify-between">
 
-  <!-- ==================== REAL REGISTRATION / LOGIN MODAL ==================== -->
+  <!-- ==================== AUTH MODAL: LOGIN / REGISTER ==================== -->
   <div id="screen-auth" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
     <div class="glass-card rounded-3xl max-w-md w-full p-6 sm:p-8 space-y-5 border border-emerald-500/30 shadow-2xl">
       <div class="text-center">
-        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-3xl mx-auto shadow-xl shadow-emerald-500/20 mb-3">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-3xl mx-auto shadow-xl shadow-emerald-500/20 mb-2">
           ⚡
         </div>
-        <h2 class="text-2xl font-black text-white">تسجيل الدخول في <span class="text-emerald-400">فَكَّة</span></h2>
-        <p class="text-xs text-slate-400 mt-1">ادخل بياناتك للتجربة الحية مع أصدقائك وعائلتك</p>
+        <h2 class="text-2xl font-black text-white">منظومة <span class="text-emerald-400">فَكَّة</span></h2>
+        <p class="text-xs text-slate-400 mt-0.5">ادفع عند كَاسِب.. وخليك دايماً فَاكِك!</p>
       </div>
 
-      <!-- Registration Form -->
-      <form onsubmit="handleRegistration(event)" class="space-y-4 text-right">
+      <!-- Two-Tab Switcher: Login vs Register -->
+      <div class="bg-slate-900 p-1 rounded-2xl flex border border-slate-850">
+        <button onclick="setAuthTab('login')" id="tab-login" class="flex-1 py-2 px-3 rounded-xl font-black text-xs transition bg-emerald-500 text-slate-950 shadow-md">
+          تسجيل الدخول (للمسجلين)
+        </button>
+        <button onclick="setAuthTab('register')" id="tab-register" class="flex-1 py-2 px-3 rounded-xl font-bold text-xs transition text-slate-300 hover:text-white">
+          إنشاء حساب جديد
+        </button>
+      </div>
+
+      <!-- Error Message Banner -->
+      <div id="auth-error" class="hidden p-3 rounded-xl bg-red-500/15 border border-red-500/40 text-red-300 text-xs font-semibold text-right"></div>
+
+      <!-- 1. LOGIN FORM (Phone Number only) -->
+      <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4 text-right">
         <div>
-          <label class="block text-xs text-slate-300 font-bold mb-1">اسمك بالكامل (ليظهر للطرف الآخر):</label>
+          <label class="block text-xs text-slate-300 font-bold mb-1">رقم الموبايل المسجل به:</label>
+          <input type="tel" id="login-phone" required placeholder="مثال: 01012345678" 
+            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-emerald-500 placeholder-slate-500 text-center tracking-wider" dir="ltr">
+        </div>
+
+        <button type="submit" id="btn-login-submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black py-3.5 px-4 rounded-2xl text-base shadow-xl shadow-emerald-500/20 transition flex items-center justify-center gap-2 transform active:scale-98">
+          <span>🔓</span> تسجيل الدخول إلى محفظتي
+        </button>
+
+        <p class="text-center text-[11px] text-slate-500">
+          لم تسجل من قبل؟ <button type="button" onclick="setAuthTab('register')" class="text-emerald-400 font-bold underline">اضغط هنا لإنشاء حساب جديد</button>
+        </p>
+      </form>
+
+      <!-- 2. REGISTER FORM (Name + Phone + Role) -->
+      <form id="form-register" onsubmit="handleRegister(event)" class="space-y-4 text-right hidden">
+        <div>
+          <label class="block text-xs text-slate-300 font-bold mb-1">اسمك بالكامل:</label>
           <input type="text" id="reg-name" required placeholder="مثال: خالد الملاح" 
             class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-emerald-500 placeholder-slate-500">
         </div>
 
         <div>
           <label class="block text-xs text-slate-300 font-bold mb-1">رقم الموبايل:</label>
-          <input type="tel" id="reg-phone" required placeholder="مثال: 01012345678" 
+          <input type="tel" id="reg-phone" required placeholder="مثال: 010xxxxxxxx" 
             class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-emerald-500 placeholder-slate-500" dir="ltr">
         </div>
 
@@ -70,7 +100,6 @@
           </div>
         </div>
 
-        <!-- Optional Details for Kasib -->
         <div id="box-role-details" class="hidden">
           <label class="block text-xs text-slate-300 font-bold mb-1">تفاصيل النشاط (اختياري):</label>
           <input type="text" id="reg-details" placeholder="مثال: ميكروباص خط الجامعة أو كشك النصر" 
@@ -78,22 +107,13 @@
         </div>
 
         <button type="submit" id="btn-reg-submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black py-3.5 px-4 rounded-2xl text-base shadow-xl shadow-emerald-500/20 transition flex items-center justify-center gap-2 transform active:scale-98">
-          <span>⚡</span> ابدأ التجربة (100 جنيه رصيد ترحيبي)
+          <span>✨</span> تأكيد التسجيل (100 جنيه رصيد ترحيبي)
         </button>
-      </form>
 
-      <!-- Quick presets shortcut -->
-      <div class="border-t border-slate-800 pt-3 text-center">
-        <p class="text-[11px] text-slate-500">أو جرب بحساب تجريبي بنقرة واحدة:</p>
-        <div class="flex justify-center gap-2 mt-2">
-          <button onclick="quickLogin('الأسطى أحمد', '01234567890', 'kasib', 'سائق ميكروباص')" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1 rounded-lg border border-slate-700">
-            🚐 الأسطى أحمد (سائق)
-          </button>
-          <button onclick="quickLogin('عم حسن', '01511223344', 'kasib', 'كشك وبقالة')" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1 rounded-lg border border-slate-700">
-            🏪 عم حسن (كشك)
-          </button>
-        </div>
-      </div>
+        <p class="text-center text-[11px] text-slate-500">
+          مسجل بالفعل؟ <button type="button" onclick="setAuthTab('login')" class="text-emerald-400 font-bold underline">اضغط هنا لتسجيل الدخول</button>
+        </p>
+      </form>
     </div>
   </div>
 
@@ -107,13 +127,13 @@
         <div>
           <div class="flex items-center gap-2">
             <h1 class="text-xl font-black text-white tracking-wide">فَكَّة <span class="text-emerald-400 text-sm font-semibold">Fakah</span></h1>
-            <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full">حي أونلاين</span>
+            <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full">أونلاين</span>
           </div>
           <p class="text-xs text-emerald-400/90 font-medium">ادفع عند كَاسِب.. وخليك دايماً فَاكِك!</p>
         </div>
       </div>
 
-      <!-- Current Logged In Profile Badge -->
+      <!-- Current Profile Badge + Logout -->
       <div class="flex items-center gap-2">
         <div class="flex items-center gap-2 bg-slate-900 border border-slate-800 px-3.5 py-1.5 rounded-full text-xs">
           <span id="header-avatar" class="text-base">🧑‍💻</span>
@@ -122,8 +142,8 @@
             <span id="header-role-badge" class="text-[10px] text-emerald-400 font-bold block leading-tight">فَاكِك</span>
           </div>
         </div>
-        <button onclick="logout()" title="تبديل أو تسجيل حساب آخر" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-2.5 py-2 rounded-xl border border-slate-700 flex items-center gap-1">
-          <span>🔄</span> <span class="hidden sm:inline">تبديل الحساب</span>
+        <button onclick="logout()" title="تسجيل الخروج" class="bg-slate-850 hover:bg-red-500/20 hover:text-red-300 text-slate-400 text-xs px-2.5 py-2 rounded-xl border border-slate-700/80 flex items-center gap-1 transition">
+          <span>🚪</span> <span class="hidden sm:inline">خروج</span>
         </button>
       </div>
     </div>
@@ -474,30 +494,52 @@
     let socket = null;
     let currentUser = null;
 
-    // Toggle Kasib specific details field
+    function setAuthTab(tab) {
+      const isLogin = tab === 'login';
+      document.getElementById('form-login').classList.toggle('hidden', !isLogin);
+      document.getElementById('form-register').classList.toggle('hidden', isLogin);
+      document.getElementById('auth-error').classList.add('hidden');
+
+      const btnLogin = document.getElementById('tab-login');
+      const btnReg = document.getElementById('tab-register');
+
+      if (isLogin) {
+        btnLogin.className = 'flex-1 py-2 px-3 rounded-xl font-black text-xs transition bg-emerald-500 text-slate-950 shadow-md';
+        btnReg.className = 'flex-1 py-2 px-3 rounded-xl font-bold text-xs transition text-slate-300 hover:text-white';
+      } else {
+        btnReg.className = 'flex-1 py-2 px-3 rounded-xl font-black text-xs transition bg-emerald-500 text-slate-950 shadow-md';
+        btnLogin.className = 'flex-1 py-2 px-3 rounded-xl font-bold text-xs transition text-slate-300 hover:text-white';
+      }
+    }
+
     function toggleRoleDetails(isKasib) {
       document.getElementById('box-role-details').classList.toggle('hidden', !isKasib);
     }
 
-    // Handle Form Registration
-    async function handleRegistration(e) {
-      e.preventDefault();
-      const name = document.getElementById('reg-name').value;
-      const phone = document.getElementById('reg-phone').value;
-      const role = document.querySelector('input[name="reg-role"]:checked').value;
-      const details = document.getElementById('reg-details').value;
+    function showAuthError(msg) {
+      const errBox = document.getElementById('auth-error');
+      errBox.innerText = msg;
+      errBox.classList.remove('hidden');
+    }
 
-      const btn = document.getElementById('btn-reg-submit');
+    // 1. Handle Login (Phone only)
+    async function handleLogin(e) {
+      e.preventDefault();
+      const phone = document.getElementById('login-phone').value;
+      const btn = document.getElementById('btn-login-submit');
+
       btn.disabled = true;
-      btn.innerText = 'جاري تسجيل الدخول...';
+      btn.innerText = 'جاري التحقق...';
+      document.getElementById('auth-error').classList.add('hidden');
 
       try {
-        const res = await fetch('/api/auth', {
+        const res = await fetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, phone, role, details })
+          body: JSON.stringify({ phone })
         });
         const data = await res.json();
+
         if (data.user) {
           currentUser = data.user;
           localStorage.setItem('fakah_user', JSON.stringify(currentUser));
@@ -505,30 +547,59 @@
           setupUserSession();
           await loadState();
         } else {
-          alert(data.error || 'حدث خطأ في التسجيل');
+          showAuthError(data.error || 'رقم الموبايل غير مسجل');
         }
       } catch (err) {
-        alert('خطأ في الاتصال بالخادم');
+        showAuthError('خطأ في الاتصال بالخادم');
       } finally {
         btn.disabled = false;
-        btn.innerHTML = `<span>⚡</span> ابدأ التجربة (100 جنيه رصيد ترحيبي)`;
+        btn.innerHTML = `<span>🔓</span> تسجيل الدخول إلى محفظتي`;
       }
     }
 
-    // Quick Preset Login
-    function quickLogin(name, phone, role, details) {
-      document.getElementById('reg-name').value = name;
-      document.getElementById('reg-phone').value = phone;
-      document.querySelector(`input[name="reg-role"][value="${role}"]`).checked = true;
-      document.getElementById('reg-details').value = details;
-      toggleRoleDetails(role === 'kasib');
-      document.getElementById('btn-reg-submit').click();
+    // 2. Handle Register (Name + Phone + Role)
+    async function handleRegister(e) {
+      e.preventDefault();
+      const name = document.getElementById('reg-name').value;
+      const phone = document.getElementById('reg-phone').value;
+      const role = document.querySelector('input[name="reg-role"]:checked').value;
+      const details = document.getElementById('reg-details').value;
+      const btn = document.getElementById('btn-reg-submit');
+
+      btn.disabled = true;
+      btn.innerText = 'جاري التسجيل...';
+      document.getElementById('auth-error').classList.add('hidden');
+
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, phone, role, details })
+        });
+        const data = await res.json();
+
+        if (data.user) {
+          currentUser = data.user;
+          localStorage.setItem('fakah_user', JSON.stringify(currentUser));
+          document.getElementById('screen-auth').classList.add('hidden');
+          setupUserSession();
+          await loadState();
+        } else {
+          showAuthError(data.error || 'حدث خطأ في التسجيل');
+        }
+      } catch (err) {
+        showAuthError('خطأ في الاتصال بالخادم');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>✨</span> تأكيد التسجيل (100 جنيه رصيد ترحيبي)`;
+      }
     }
 
     function logout() {
       localStorage.removeItem('fakah_user');
       currentUser = null;
       document.getElementById('screen-auth').classList.remove('hidden');
+      setAuthTab('login');
     }
 
     function setupUserSession() {
@@ -631,7 +702,6 @@
     function updateUI() {
       if (!appState) return;
 
-      // Update current user balance from state
       if (currentUser) {
         const updatedSelf = appState.users.find(u => u.id === currentUser.id || u.phone === currentUser.phone);
         if (updatedSelf) {
@@ -820,8 +890,6 @@
 
         if (payload.type === 'NEW_PAYMENT') {
           const txn = payload.data.transaction;
-          
-          // Only announce voice if this device is the receiving Kasib!
           if (currentUser && currentUser.id === txn.toId) {
             const spoken = `تم استلام ${txn.amountWords} بنجاح من الزبون ${txn.fromName}`;
             speakArabic(spoken);
@@ -848,12 +916,13 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      // Check saved user in localStorage
       const savedUser = localStorage.getItem('fakah_user');
       if (savedUser) {
         currentUser = JSON.parse(savedUser);
         document.getElementById('screen-auth').classList.add('hidden');
         setupUserSession();
+      } else {
+        setAuthTab('login');
       }
       loadState();
       initWebSocket();

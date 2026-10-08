@@ -11,7 +11,7 @@ const wss = new WebSocket.Server({ server });
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Initial State with standard presets and dynamic user registry
+// Initial In-Memory Database
 const initialState = () => ({
   platform: {
     name: 'منظومة فَكَّة للمدفوعات اليومية (Fakah)',
@@ -55,7 +55,7 @@ const initialState = () => ({
       amount: 7.50,
       amountWords: 'سبعة جنيهات ونصف',
       type: 'PAYMENT',
-      note: 'أجرة تجريبية للترحيب',
+      note: 'أجرة ترحيبية',
       status: 'COMPLETED',
       timestamp: '١٠:١٥ م',
       verificationHash: 'v_init_1'
@@ -100,7 +100,7 @@ function amountToArabicWords(num) {
   return text || `${num} جنيه`;
 }
 
-// API: Get State
+// API: State
 app.get('/api/state', (req, res) => {
   const totalBalances = db.users.reduce((acc, u) => acc + u.balance, 0);
   const estimatedAnnualFloat = totalBalances * db.platform.floatAnnualRate;
@@ -116,8 +116,27 @@ app.get('/api/state', (req, res) => {
   });
 });
 
-// API: Real User Registration / Login (Name + Phone + Role)
-app.post('/api/auth', (req, res) => {
+// API: 1. تسجيل الدخول لمستخدم مسجل بالفعل برقم الموبايل
+app.post('/api/auth/login', (req, res) => {
+  const { phone } = req.body;
+  if (!phone) {
+    return res.status(400).json({ error: 'يرجى كتابة رقم الموبايل' });
+  }
+
+  const cleanPhone = phone.trim().replace(/\s+/g, '');
+  const user = db.users.find(u => u.phone === cleanPhone);
+
+  if (!user) {
+    return res.status(404).json({ 
+      error: 'رقم الموبايل هذا غير مسجل لدينا. اضغط على تبويب "إنشاء حساب جديد" للتسجيل لأول مرة.' 
+    });
+  }
+
+  res.json({ success: true, user });
+});
+
+// API: 2. إنشاء حساب جديد لمن لم يسجل من قبل
+app.post('/api/auth/register', (req, res) => {
   const { name, phone, role, details } = req.body;
 
   if (!name || !phone) {
@@ -125,32 +144,30 @@ app.post('/api/auth', (req, res) => {
   }
 
   const cleanPhone = phone.trim().replace(/\s+/g, '');
-  let user = db.users.find(u => u.phone === cleanPhone);
+  const existing = db.users.find(u => u.phone === cleanPhone);
 
-  if (user) {
-    // Existing user: update name or role if provided
-    user.name = name.trim();
-    if (role) user.role = role;
-    if (details) user.title = details;
-  } else {
-    // New registration
-    const userRole = role === 'kasib' ? 'kasib' : 'fakik';
-    const avatar = userRole === 'kasib' ? (details && details.includes('ميكروباص') ? '🚐' : '🏪') : '🧑‍💻';
-    
-    user = {
-      id: `usr_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-      role: userRole,
-      name: name.trim(),
-      title: details || (userRole === 'kasib' ? 'بائع / سائق معتمد' : 'زبون وراكب فَاكِك'),
-      phone: cleanPhone,
-      balance: 100.00, // 100 EGP Welcome demo credit
-      avatar: avatar,
-      soundEnabled: true
-    };
-
-    db.users.push(user);
-    broadcast('USER_REGISTERED', { user });
+  if (existing) {
+    return res.status(400).json({ 
+      error: 'رقم الموبايل هذا مسجل بالفعل مسبقاً! يرجى الانتقال إلى تبويب "تسجيل الدخول".' 
+    });
   }
+
+  const userRole = role === 'kasib' ? 'kasib' : 'fakik';
+  const avatar = userRole === 'kasib' ? (details && details.includes('ميكروباص') ? '🚐' : '🏪') : '🧑‍💻';
+
+  const user = {
+    id: `usr_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+    role: userRole,
+    name: name.trim(),
+    title: details || (userRole === 'kasib' ? 'بائع / سائق معتمد' : 'زبون وراكب فَاكِك'),
+    phone: cleanPhone,
+    balance: 100.00, // 100 EGP Welcome balance
+    avatar: avatar,
+    soundEnabled: true
+  };
+
+  db.users.push(user);
+  broadcast('USER_REGISTERED', { user });
 
   res.json({ success: true, user });
 });
