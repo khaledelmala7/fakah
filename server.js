@@ -11,7 +11,7 @@ const wss = new WebSocket.Server({ server });
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Initial In-Memory Database
+// Initial In-Memory Database with PIN support
 const initialState = () => ({
   platform: {
     name: 'منظومة فَكَّة للمدفوعات اليومية (Fakah)',
@@ -30,6 +30,7 @@ const initialState = () => ({
       name: 'الأسطى أحمد (كَاسِب)',
       title: 'سائق ميكروباص (ط س ج ٤٩٢١)',
       phone: '01234567890',
+      pin: '1234',
       balance: 215.00,
       avatar: '🚐',
       soundEnabled: true
@@ -40,6 +41,7 @@ const initialState = () => ({
       name: 'عم حسن (كَاسِب)',
       title: 'كشك وبقالة النصر',
       phone: '01511223344',
+      pin: '1234',
       balance: 140.00,
       avatar: '🏪',
       soundEnabled: true
@@ -105,8 +107,11 @@ app.get('/api/state', (req, res) => {
   const totalBalances = db.users.reduce((acc, u) => acc + u.balance, 0);
   const estimatedAnnualFloat = totalBalances * db.platform.floatAnnualRate;
 
+  // Mask PINs for security
+  const safeUsers = db.users.map(({ pin, ...userRest }) => userRest);
+
   res.json({
-    users: db.users,
+    users: safeUsers,
     transactions: db.transactions,
     platform: {
       ...db.platform,
@@ -116,11 +121,16 @@ app.get('/api/state', (req, res) => {
   });
 });
 
-// API: 1. تسجيل الدخول لمستخدم مسجل بالفعل برقم الموبايل
+// API: 1. تسجيل الدخول برقم الموبايل + الرمز السري (PIN)
 app.post('/api/auth/login', (req, res) => {
-  const { phone } = req.body;
+  const { phone, pin } = req.body;
+
   if (!phone) {
     return res.status(400).json({ error: 'يرجى كتابة رقم الموبايل' });
+  }
+
+  if (!pin || pin.length !== 4) {
+    return res.status(400).json({ error: 'يرجى إدخال الرمز السري المكون من 4 أرقام' });
   }
 
   const cleanPhone = phone.trim().replace(/\s+/g, '');
@@ -128,19 +138,29 @@ app.post('/api/auth/login', (req, res) => {
 
   if (!user) {
     return res.status(404).json({ 
-      error: 'رقم الموبايل هذا غير مسجل لدينا. اضغط على تبويب "إنشاء حساب جديد" للتسجيل لأول مرة.' 
+      error: 'رقم الموبايل هذا غير مسجل. اضغط على تبويب "إنشاء حساب جديد" للتسجيل.' 
     });
   }
 
-  res.json({ success: true, user });
+  // Verify PIN
+  if (user.pin && user.pin !== pin.trim()) {
+    return res.status(401).json({ error: 'الرمز السري (PIN) غير صحيح، يرجى المحاولة مرة أخرى' });
+  }
+
+  const { pin: userPin, ...safeUser } = user;
+  res.json({ success: true, user: safeUser });
 });
 
-// API: 2. إنشاء حساب جديد لمن لم يسجل من قبل
+// API: 2. إنشاء حساب جديد مع تعيين الرمز السري (PIN)
 app.post('/api/auth/register', (req, res) => {
-  const { name, phone, role, details } = req.body;
+  const { name, phone, pin, role, details } = req.body;
 
   if (!name || !phone) {
     return res.status(400).json({ error: 'يرجى كتابة الاسم ورقم الموبايل' });
+  }
+
+  if (!pin || pin.length !== 4 || isNaN(pin)) {
+    return res.status(400).json({ error: 'يجب تعيين رمز سري (PIN) مكون من 4 أرقام' });
   }
 
   const cleanPhone = phone.trim().replace(/\s+/g, '');
@@ -148,7 +168,7 @@ app.post('/api/auth/register', (req, res) => {
 
   if (existing) {
     return res.status(400).json({ 
-      error: 'رقم الموبايل هذا مسجل بالفعل مسبقاً! يرجى الانتقال إلى تبويب "تسجيل الدخول".' 
+      error: 'رقم الموبايل هذا مسجل بالفعل مسبقاً! يرجى الانتقال إلى تبويب "تسجيل الدخول" وكتابة الرمز السري.' 
     });
   }
 
@@ -161,15 +181,18 @@ app.post('/api/auth/register', (req, res) => {
     name: name.trim(),
     title: details || (userRole === 'kasib' ? 'بائع / سائق معتمد' : 'زبون وراكب فَاكِك'),
     phone: cleanPhone,
+    pin: pin.trim(),
     balance: 100.00, // 100 EGP Welcome balance
     avatar: avatar,
     soundEnabled: true
   };
 
   db.users.push(user);
-  broadcast('USER_REGISTERED', { user });
+  
+  const { pin: userPin, ...safeUser } = user;
+  broadcast('USER_REGISTERED', { user: safeUser });
 
-  res.json({ success: true, user });
+  res.json({ success: true, user: safeUser });
 });
 
 // API: Payment (فَاكِك -> كَاسِب)

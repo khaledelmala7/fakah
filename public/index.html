@@ -18,11 +18,12 @@
       70% { transform: scale(1); box-shadow: 0 0 0 14px rgba(16, 185, 129, 0); }
       100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
     }
+    input[type=password] { letter-spacing: 0.3em; }
   </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between">
 
-  <!-- ==================== AUTH MODAL: LOGIN / REGISTER ==================== -->
+  <!-- ==================== AUTH MODAL: LOGIN / REGISTER WITH PIN ==================== -->
   <div id="screen-auth" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
     <div class="glass-card rounded-3xl max-w-md w-full p-6 sm:p-8 space-y-5 border border-emerald-500/30 shadow-2xl">
       <div class="text-center">
@@ -34,9 +35,9 @@
       </div>
 
       <!-- Two-Tab Switcher: Login vs Register -->
-      <div class="bg-slate-900 p-1 rounded-2xl flex border border-slate-850">
+      <div class="bg-slate-900 p-1 rounded-2xl flex border border-slate-800">
         <button onclick="setAuthTab('login')" id="tab-login" class="flex-1 py-2 px-3 rounded-xl font-black text-xs transition bg-emerald-500 text-slate-950 shadow-md">
-          تسجيل الدخول (للمسجلين)
+          تسجيل الدخول (بالـ PIN)
         </button>
         <button onclick="setAuthTab('register')" id="tab-register" class="flex-1 py-2 px-3 rounded-xl font-bold text-xs transition text-slate-300 hover:text-white">
           إنشاء حساب جديد
@@ -46,12 +47,19 @@
       <!-- Error Message Banner -->
       <div id="auth-error" class="hidden p-3 rounded-xl bg-red-500/15 border border-red-500/40 text-red-300 text-xs font-semibold text-right"></div>
 
-      <!-- 1. LOGIN FORM (Phone Number only) -->
+      <!-- 1. LOGIN FORM (Phone + 4-digit PIN) -->
       <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4 text-right">
         <div>
-          <label class="block text-xs text-slate-300 font-bold mb-1">رقم الموبايل المسجل به:</label>
-          <input type="tel" id="login-phone" required placeholder="مثال: 01012345678" 
+          <label class="block text-xs text-slate-300 font-bold mb-1">رقم الموبايل:</label>
+          <input type="tel" id="login-phone" required placeholder="010xxxxxxxx" 
             class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-emerald-500 placeholder-slate-500 text-center tracking-wider" dir="ltr">
+        </div>
+
+        <div>
+          <label class="block text-xs text-slate-300 font-bold mb-1">الرمز السري (PIN من 4 أرقام):</label>
+          <input type="password" id="login-pin" required maxlength="4" pattern="[0-9]{4}" inputmode="numeric" placeholder="••••" 
+            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-lg font-black text-emerald-400 focus:outline-none focus:border-emerald-500 placeholder-slate-600 text-center" dir="ltr">
+          <p class="text-[10px] text-slate-500 mt-1 text-center">أدخل الرمز السري المكون من 4 أرقام الذي اخترته عند التسجيل</p>
         </div>
 
         <button type="submit" id="btn-login-submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black py-3.5 px-4 rounded-2xl text-base shadow-xl shadow-emerald-500/20 transition flex items-center justify-center gap-2 transform active:scale-98">
@@ -63,38 +71,52 @@
         </p>
       </form>
 
-      <!-- 2. REGISTER FORM (Name + Phone + Role) -->
+      <!-- 2. REGISTER FORM (Name + Phone + PIN + Role) -->
       <form id="form-register" onsubmit="handleRegister(event)" class="space-y-4 text-right hidden">
         <div>
           <label class="block text-xs text-slate-300 font-bold mb-1">اسمك بالكامل:</label>
           <input type="text" id="reg-name" required placeholder="مثال: خالد الملاح" 
-            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-emerald-500 placeholder-slate-500">
+            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold text-white focus:outline-none focus:border-emerald-500 placeholder-slate-500">
         </div>
 
         <div>
           <label class="block text-xs text-slate-300 font-bold mb-1">رقم الموبايل:</label>
           <input type="tel" id="reg-phone" required placeholder="مثال: 010xxxxxxxx" 
-            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-emerald-500 placeholder-slate-500" dir="ltr">
+            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold text-white focus:outline-none focus:border-emerald-500 placeholder-slate-500" dir="ltr">
+        </div>
+
+        <!-- 4-digit PIN setup -->
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs text-slate-300 font-bold mb-1">الرمز السري (PIN):</label>
+            <input type="password" id="reg-pin" required maxlength="4" pattern="[0-9]{4}" inputmode="numeric" placeholder="4 أرقام" 
+              class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-sm font-black text-emerald-400 focus:outline-none focus:border-emerald-500 placeholder-slate-600 text-center" dir="ltr">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-300 font-bold mb-1">تأكيد الـ PIN:</label>
+            <input type="password" id="reg-pin-confirm" required maxlength="4" pattern="[0-9]{4}" inputmode="numeric" placeholder="تأكيد" 
+              class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-sm font-black text-emerald-400 focus:outline-none focus:border-emerald-500 placeholder-slate-600 text-center" dir="ltr">
+          </div>
         </div>
 
         <div>
-          <label class="block text-xs text-slate-300 font-bold mb-2">اختر صفتك في المنظومة:</label>
+          <label class="block text-xs text-slate-300 font-bold mb-1.5">اختر صفتك في المنظومة:</label>
           <div class="grid grid-cols-2 gap-2">
             <label class="cursor-pointer">
               <input type="radio" name="reg-role" value="fakik" checked onchange="toggleRoleDetails(false)" class="hidden peer">
-              <div class="p-3.5 rounded-2xl border border-slate-700 bg-slate-900 peer-checked:border-emerald-500 peer-checked:bg-emerald-950/40 text-center transition">
-                <span class="text-2xl block mb-1">🧑‍💻</span>
-                <span class="block font-black text-sm text-white">أنا "فَاكِك"</span>
-                <span class="block text-[10px] text-slate-400 mt-0.5">زبون / راكب مواصلات</span>
+              <div class="p-3 rounded-2xl border border-slate-700 bg-slate-900 peer-checked:border-emerald-500 peer-checked:bg-emerald-950/40 text-center transition">
+                <span class="text-xl block mb-0.5">🧑‍💻</span>
+                <span class="block font-black text-xs text-white">أنا "فَاكِك"</span>
+                <span class="block text-[9px] text-slate-400">زبون / راكب مواصلات</span>
               </div>
             </label>
 
             <label class="cursor-pointer">
               <input type="radio" name="reg-role" value="kasib" onchange="toggleRoleDetails(true)" class="hidden peer">
-              <div class="p-3.5 rounded-2xl border border-slate-700 bg-slate-900 peer-checked:border-blue-500 peer-checked:bg-blue-950/40 text-center transition">
-                <span class="text-2xl block mb-1">🏪</span>
-                <span class="block font-black text-sm text-white">أنا "كَاسِب"</span>
-                <span class="block text-[10px] text-slate-400 mt-0.5">سائق / كشك / خضار</span>
+              <div class="p-3 rounded-2xl border border-slate-700 bg-slate-900 peer-checked:border-blue-500 peer-checked:bg-blue-950/40 text-center transition">
+                <span class="text-xl block mb-0.5">🏪</span>
+                <span class="block font-black text-xs text-white">أنا "كَاسِب"</span>
+                <span class="block text-[9px] text-slate-400">سائق / كشك / خضار</span>
               </div>
             </label>
           </div>
@@ -103,11 +125,11 @@
         <div id="box-role-details" class="hidden">
           <label class="block text-xs text-slate-300 font-bold mb-1">تفاصيل النشاط (اختياري):</label>
           <input type="text" id="reg-details" placeholder="مثال: ميكروباص خط الجامعة أو كشك النصر" 
-            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 placeholder-slate-500">
+            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-blue-500 placeholder-slate-500">
         </div>
 
         <button type="submit" id="btn-reg-submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black py-3.5 px-4 rounded-2xl text-base shadow-xl shadow-emerald-500/20 transition flex items-center justify-center gap-2 transform active:scale-98">
-          <span>✨</span> تأكيد التسجيل (100 جنيه رصيد ترحيبي)
+          <span>✨</span> تأكيد التسجيل (100 جنيه ترحيبي)
         </button>
 
         <p class="text-center text-[11px] text-slate-500">
@@ -127,7 +149,7 @@
         <div>
           <div class="flex items-center gap-2">
             <h1 class="text-xl font-black text-white tracking-wide">فَكَّة <span class="text-emerald-400 text-sm font-semibold">Fakah</span></h1>
-            <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full">أونلاين</span>
+            <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full">محمي بـ PIN 🔒</span>
           </div>
           <p class="text-xs text-emerald-400/90 font-medium">ادفع عند كَاسِب.. وخليك دايماً فَاكِك!</p>
         </div>
@@ -203,7 +225,7 @@
         <div>
           <label class="block text-xs text-slate-400 mb-1.5">اختر التاجر أو السائق المسجل (كَاسِب):</label>
           <select id="pay-target-select" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-3 text-sm font-bold text-white focus:outline-none focus:border-emerald-500">
-            <!-- Dynamically populated from registered Kasib users -->
+            <!-- Dynamically populated -->
           </select>
         </div>
 
@@ -409,7 +431,7 @@
       <div>
         <label class="block text-xs text-slate-400 mb-1">الزبون المستلم للباقي (فَاكِك):</label>
         <select id="change-customer-select" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm font-bold text-white">
-          <!-- Dynamically populated from registered Fakik users -->
+          <!-- Dynamically populated -->
         </select>
       </div>
 
@@ -522,21 +544,27 @@
       errBox.classList.remove('hidden');
     }
 
-    // 1. Handle Login (Phone only)
+    // 1. Handle Login (Phone + 4-digit PIN)
     async function handleLogin(e) {
       e.preventDefault();
       const phone = document.getElementById('login-phone').value;
+      const pin = document.getElementById('login-pin').value;
       const btn = document.getElementById('btn-login-submit');
 
+      if (!pin || pin.length !== 4) {
+        showAuthError('الرمز السري (PIN) يجب أن يكون 4 أرقام');
+        return;
+      }
+
       btn.disabled = true;
-      btn.innerText = 'جاري التحقق...';
+      btn.innerText = 'جاري التحقق من الـ PIN...';
       document.getElementById('auth-error').classList.add('hidden');
 
       try {
         const res = await fetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone })
+          body: JSON.stringify({ phone, pin })
         });
         const data = await res.json();
 
@@ -547,7 +575,7 @@
           setupUserSession();
           await loadState();
         } else {
-          showAuthError(data.error || 'رقم الموبايل غير مسجل');
+          showAuthError(data.error || 'فشل تسجيل الدخول');
         }
       } catch (err) {
         showAuthError('خطأ في الاتصال بالخادم');
@@ -557,24 +585,36 @@
       }
     }
 
-    // 2. Handle Register (Name + Phone + Role)
+    // 2. Handle Register (Name + Phone + 4-digit PIN + Role)
     async function handleRegister(e) {
       e.preventDefault();
       const name = document.getElementById('reg-name').value;
       const phone = document.getElementById('reg-phone').value;
+      const pin = document.getElementById('reg-pin').value;
+      const pinConfirm = document.getElementById('reg-pin-confirm').value;
       const role = document.querySelector('input[name="reg-role"]:checked').value;
       const details = document.getElementById('reg-details').value;
       const btn = document.getElementById('btn-reg-submit');
 
+      if (!pin || pin.length !== 4 || isNaN(pin)) {
+        showAuthError('يجب أن يتكون الرمز السري من 4 أرقام فقط');
+        return;
+      }
+
+      if (pin !== pinConfirm) {
+        showAuthError('تأكيد الرمز السري غير متطابق مع الـ PIN');
+        return;
+      }
+
       btn.disabled = true;
-      btn.innerText = 'جاري التسجيل...';
+      btn.innerText = 'جاري إنشاء الحساب...';
       document.getElementById('auth-error').classList.add('hidden');
 
       try {
         const res = await fetch('/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, phone, role, details })
+          body: JSON.stringify({ name, phone, pin, role, details })
         });
         const data = await res.json();
 
@@ -591,7 +631,7 @@
         showAuthError('خطأ في الاتصال بالخادم');
       } finally {
         btn.disabled = false;
-        btn.innerHTML = `<span>✨</span> تأكيد التسجيل (100 جنيه رصيد ترحيبي)`;
+        btn.innerHTML = `<span>✨</span> تأكيد التسجيل (100 جنيه ترحيبي)`;
       }
     }
 
@@ -600,6 +640,7 @@
       currentUser = null;
       document.getElementById('screen-auth').classList.remove('hidden');
       setAuthTab('login');
+      document.getElementById('login-pin').value = '';
     }
 
     function setupUserSession() {
