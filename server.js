@@ -11,12 +11,12 @@ const wss = new WebSocket.Server({ server });
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Initial In-Memory Ledger according to Approved Plan
+// Initial State with standard presets and dynamic user registry
 const initialState = () => ({
   platform: {
     name: 'منظومة فَكَّة للمدفوعات اليومية (Fakah)',
     slogan: 'ادفع عند كَاسِب.. وخليك دايماً فَاكِك!',
-    floatAnnualRate: 0.22, // 22% average yield on Treasury Bills in partner bank
+    floatAnnualRate: 0.22,
     totalCashOutFeesCollected: 0.0,
     totalTransactionsCount: 0,
     totalVolumeTransacted: 0.0,
@@ -25,92 +25,46 @@ const initialState = () => ({
   },
   users: [
     {
-      id: 'fakik_1',
-      role: 'fakik',
-      name: 'محمد علي (فَاكِك)',
-      title: 'زبون وراكب يومي',
-      phone: '01012345678',
-      balance: 85.50,
-      avatar: '🧑‍💻'
-    },
-    {
-      id: 'fakik_2',
-      role: 'fakik',
-      name: 'سارة خالد (فَاكِك)',
-      title: 'طالبة جامعية',
-      phone: '01198765432',
-      balance: 50.00,
-      avatar: '👩‍🎓'
-    },
-    {
-      id: 'kasib_1',
+      id: 'kasib_demo_1',
       role: 'kasib',
       name: 'الأسطى أحمد (كَاسِب)',
       title: 'سائق ميكروباص (ط س ج ٤٩٢١)',
-      route: 'خط جامعة القاهرة - الجيزة',
       phone: '01234567890',
       balance: 215.00,
       avatar: '🚐',
       soundEnabled: true
     },
     {
-      id: 'kasib_2',
+      id: 'kasib_demo_2',
       role: 'kasib',
       name: 'عم حسن (كَاسِب)',
-      title: 'صاحب كشك وبقالة النصر',
-      storeName: 'كشك النصر للحلويات والسجائر',
+      title: 'كشك وبقالة النصر',
       phone: '01511223344',
       balance: 140.00,
       avatar: '🏪',
-      soundEnabled: true
-    },
-    {
-      id: 'kasib_3',
-      role: 'kasib',
-      name: 'المعلم إبراهيم (كَاسِب)',
-      title: 'بائع خضار وفاكهة',
-      storeName: 'خضار أولاد إبراهيم (كسور الميزان)',
-      phone: '01099887766',
-      balance: 310.25,
-      avatar: '🥬',
       soundEnabled: true
     }
   ],
   transactions: [
     {
       id: 'TXN-101',
-      fromId: 'fakik_1',
-      fromName: 'محمد علي (فَاكِك)',
-      toId: 'kasib_1',
+      fromId: 'system',
+      fromName: 'نظام فكة',
+      toId: 'kasib_demo_1',
       toName: 'الأسطى أحمد (كَاسِب)',
       amount: 7.50,
       amountWords: 'سبعة جنيهات ونصف',
       type: 'PAYMENT',
-      note: 'أجرة ميكروباص خط الجامعة',
+      note: 'أجرة تجريبية للترحيب',
       status: 'COMPLETED',
       timestamp: '١٠:١٥ م',
-      verificationHash: 'v_9a8f12'
-    },
-    {
-      id: 'TXN-100',
-      fromId: 'kasib_2',
-      fromName: 'عم حسن (كَاسِب)',
-      toId: 'fakik_2',
-      toName: 'سارة خالد (فَاكِك)',
-      amount: 14.50,
-      amountWords: 'أربعة عشر جنيهاً ونصف',
-      type: 'REVERSE_CHANGE',
-      note: 'رد باقي نقدي (بديل اللبانة)',
-      status: 'COMPLETED',
-      timestamp: '٠٩:٤٥ م',
-      verificationHash: 'v_7b2c44'
+      verificationHash: 'v_init_1'
     }
   ]
 });
 
 let db = initialState();
 
-// Broadcast WebSocket message to all connected clients
 function broadcast(eventType, payload) {
   const msg = JSON.stringify({ type: eventType, data: payload, timestamp: Date.now() });
   wss.clients.forEach(client => {
@@ -120,7 +74,6 @@ function broadcast(eventType, payload) {
   });
 }
 
-// Convert numbers into Arabic spoken words
 function amountToArabicWords(num) {
   const n = parseFloat(num);
   if (isNaN(n)) return `${num} جنيه`;
@@ -147,7 +100,7 @@ function amountToArabicWords(num) {
   return text || `${num} جنيه`;
 }
 
-// API: Current state
+// API: Get State
 app.get('/api/state', (req, res) => {
   const totalBalances = db.users.reduce((acc, u) => acc + u.balance, 0);
   const estimatedAnnualFloat = totalBalances * db.platform.floatAnnualRate;
@@ -163,17 +116,56 @@ app.get('/api/state', (req, res) => {
   });
 });
 
-// API 1: فِكّ (Payment from فَاكِك to كَاسِب)
+// API: Real User Registration / Login (Name + Phone + Role)
+app.post('/api/auth', (req, res) => {
+  const { name, phone, role, details } = req.body;
+
+  if (!name || !phone) {
+    return res.status(400).json({ error: 'يرجى كتابة الاسم ورقم الموبايل' });
+  }
+
+  const cleanPhone = phone.trim().replace(/\s+/g, '');
+  let user = db.users.find(u => u.phone === cleanPhone);
+
+  if (user) {
+    // Existing user: update name or role if provided
+    user.name = name.trim();
+    if (role) user.role = role;
+    if (details) user.title = details;
+  } else {
+    // New registration
+    const userRole = role === 'kasib' ? 'kasib' : 'fakik';
+    const avatar = userRole === 'kasib' ? (details && details.includes('ميكروباص') ? '🚐' : '🏪') : '🧑‍💻';
+    
+    user = {
+      id: `usr_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+      role: userRole,
+      name: name.trim(),
+      title: details || (userRole === 'kasib' ? 'بائع / سائق معتمد' : 'زبون وراكب فَاكِك'),
+      phone: cleanPhone,
+      balance: 100.00, // 100 EGP Welcome demo credit
+      avatar: avatar,
+      soundEnabled: true
+    };
+
+    db.users.push(user);
+    broadcast('USER_REGISTERED', { user });
+  }
+
+  res.json({ success: true, user });
+});
+
+// API: Payment (فَاكِك -> كَاسِب)
 app.post('/api/pay', (req, res) => {
   const { fromId, toId, amount, note } = req.body;
   const payAmount = parseFloat(amount);
 
   if (isNaN(payAmount) || payAmount < db.platform.minTxnLimit) {
-    return res.status(400).json({ error: `الحد الأدنى للمعاملة هو ${db.platform.minTxnLimit} جنيه (ربع جنيه)` });
+    return res.status(400).json({ error: `الحد الأدنى للمعاملة هو ${db.platform.minTxnLimit} جنيه` });
   }
 
   if (payAmount > db.platform.maxTxnLimit) {
-    return res.status(400).json({ error: `الحد الأقصى للمعاملة الواحدة هو ${db.platform.maxTxnLimit} جنيه مصري للحفاظ على طابع الفكة المصغرة` });
+    return res.status(400).json({ error: `الحد الأقصى للمعاملة هو ${db.platform.maxTxnLimit} جنيه` });
   }
 
   const sender = db.users.find(u => u.id === fromId);
@@ -184,10 +176,9 @@ app.post('/api/pay', (req, res) => {
   }
 
   if (sender.balance < payAmount) {
-    return res.status(400).json({ error: 'الرصيد غير كافٍ في محفظة فَاكِك، يرجى الشحن' });
+    return res.status(400).json({ error: 'رصيد محفظتك غير كافٍ، اضغط على زر "اشحن فكة"' });
   }
 
-  // Execute double-entry ledger movement
   sender.balance = parseFloat((sender.balance - payAmount).toFixed(2));
   receiver.balance = parseFloat((receiver.balance + payAmount).toFixed(2));
 
@@ -220,7 +211,7 @@ app.post('/api/pay', (req, res) => {
   res.json({ success: true, transaction: txn });
 });
 
-// API 2: رُدّ (Reverse Change from كَاسِب to فَاكِك)
+// API: Reverse Change (كَاسِب -> فَاكِك)
 app.post('/api/reverse-change', (req, res) => {
   const { merchantId, customerId, changeAmount, cashNote } = req.body;
   const amount = parseFloat(changeAmount);
@@ -241,10 +232,9 @@ app.post('/api/reverse-change', (req, res) => {
   }
 
   if (merchant.balance < amount) {
-    return res.status(400).json({ error: 'رصيد كَاسِب في التطبيق غير كافٍ لرد هذا الباقي' });
+    return res.status(400).json({ error: 'رصيد كَاسِب في المحفظة غير كافٍ لرد هذا الباقي' });
   }
 
-  // Movement: Merchant -> Customer
   merchant.balance = parseFloat((merchant.balance - amount).toFixed(2));
   customer.balance = parseFloat((customer.balance + amount).toFixed(2));
 
@@ -277,7 +267,7 @@ app.post('/api/reverse-change', (req, res) => {
   res.json({ success: true, transaction: txn });
 });
 
-// API 3: اشحن (Top-Up for فَاكِك)
+// API: Top-Up
 app.post('/api/topup', (req, res) => {
   const { userId, amount } = req.body;
   const topAmount = parseFloat(amount);
@@ -307,7 +297,7 @@ app.post('/api/topup', (req, res) => {
   res.json({ success: true, user, transaction: txn });
 });
 
-// API 4: اقبض (Cash-Out for كَاسِب)
+// API: Cash-Out
 app.post('/api/cashout', (req, res) => {
   const { userId, amount, destination } = req.body;
   const withdrawAmount = parseFloat(amount);
@@ -319,7 +309,7 @@ app.post('/api/cashout', (req, res) => {
     return res.status(400).json({ error: 'رصيد كَاسِب غير كافٍ للسحب' });
   }
 
-  const fee = parseFloat((withdrawAmount * 0.015).toFixed(2)); // 1.5% Cash-Out Fee
+  const fee = parseFloat((withdrawAmount * 0.015).toFixed(2));
   const netAmount = parseFloat((withdrawAmount - fee).toFixed(2));
 
   user.balance = parseFloat((user.balance - withdrawAmount).toFixed(2));
@@ -346,31 +336,14 @@ app.post('/api/cashout', (req, res) => {
   res.json({ success: true, user, fee, netAmount, transaction: txn });
 });
 
-// API: Reset to fresh initial state
+// API: Reset
 app.post('/api/reset', (req, res) => {
   db = initialState();
   broadcast('SYSTEM_RESET', {});
   res.json({ success: true });
 });
 
-function getLocalIp() {
-  const interfaces = os.networkInterfaces();
-  for (const name of Object.keys(interfaces)) {
-    for (const net of interfaces[name]) {
-      if (net.family === 'IPv4' && !net.internal && !net.address.startsWith('169.254')) {
-        return net.address;
-      }
-    }
-  }
-  return 'localhost';
-}
-
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, '0.0.0.0', () => {
-  const localIp = getLocalIp();
-  console.log(`=================================================`);
-  console.log(`🚀 منظومة فَكَّة المحدثة (Fakah Platform) تعمل الآن:`);
-  console.log(`💻 من الكمبيوتر:      http://localhost:${PORT}`);
-  console.log(`📱 من الهاتف (واي فاي): http://${localIp}:${PORT}`);
-  console.log(`=================================================`);
+  console.log(`🚀 منظومة فَكَّة تعمل على منفذ: ${PORT}`);
 });
